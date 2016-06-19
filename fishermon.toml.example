@@ -1,0 +1,19 @@
+production = false
+api_key = "Your bitex api key"
+sleep_for = 3600000 # 1000 * 60 * 60 == ten minutes
+
+[bids]
+total_amount = "1000.0"
+min_size = "1.0"
+price_delta = "-50.0"
+price_growth = "1.0"
+amount_growth = "1.0"
+count = 20
+
+[asks]
+total_amount = "0.9"
+min_size = "0.005"
+price_delta = "50.0"
+price_growth = "1.5"
+amount_growth = "1.5"
+count = 30

@@ -1,7 +1,5 @@
 extern crate rustc_serialize;
 #[macro_use]
-extern crate decimal;
-#[macro_use]
 extern crate log;
 extern crate bitex;
 use std::time::Duration;
@@ -11,7 +9,6 @@ pub mod strategy;
 pub use strategy::Strategy;
 use bitex::{Api, Bid, Ask, StatusCode, Order};
 use bitex::curs::{CursResult, CursError};
-use bitex::curs::serde::d128;
 
 #[derive(Debug)]
 pub struct Trader<'a> {
@@ -24,8 +21,8 @@ pub struct Trader<'a> {
 
 impl<'a> Trader<'a> {
     pub fn new(api: Api<'a>, sleep: u64, cool: u64, bids: Strategy, asks: Strategy) -> Trader<'a> {
-        assert!(bids.price_delta.is_negative(), "Bids need negative delta");
-        assert!(asks.price_delta.is_positive(), "Asks need positive delta");
+        assert!(bids.price_delta.is_sign_negative(), "Bids need negative delta");
+        assert!(asks.price_delta.is_sign_positive(), "Asks need positive delta");
         Trader{
             api: api,
             sleep_for: sleep,
@@ -48,22 +45,22 @@ impl<'a> Trader<'a> {
         })
     }
 
-    fn pairs_to_orders<F, A>(&self, pairs: Vec<(d128, d128)>, func: F) -> Vec<CursResult<A>>
-        where F: Fn(d128, d128) -> CursResult<A>
+    fn pairs_to_orders<F, A>(&self, pairs: Vec<(f64, f64)>, func: F) -> Vec<CursResult<A>>
+        where F: Fn(f64, f64) -> CursResult<A>
     {
         pairs.into_iter().map(|(a,p)|{
             self.with_retry(|| func(a,p))
         }).collect()
     }
 
-    pub fn place_bids(&self, pairs: Vec<(d128, d128)>) -> Vec<CursResult<Bid>> {
+    pub fn place_bids(&self, pairs: Vec<(f64, f64)>) -> Vec<CursResult<Bid>> {
         self.pairs_to_orders(pairs, |a,p|{
             info!("Placing Bid ${} @ ${}", a, p);
             self.api.bids().create(a,p)
         })
     }
 
-    pub fn place_asks(&self, pairs: Vec<(d128, d128)>) -> Vec<CursResult<Ask>> {
+    pub fn place_asks(&self, pairs: Vec<(f64, f64)>) -> Vec<CursResult<Ask>> {
         self.pairs_to_orders(pairs, |a,p|{
             info!("Placing Ask {} BTC @ ${}", a, p);
             self.api.asks().create(a,p)
@@ -89,7 +86,7 @@ impl<'a> Trader<'a> {
         self.clear_all_orders();
         info!("Starting trade");
         let book = self.with_retry(|| self.api.orderbook()).unwrap();
-        let profile = self.with_retry(|| self.api.profile()).unwrap();
+        //let profile = self.with_retry(|| self.api.profile()).unwrap();
         self.place_bids(self.bids_config.build_orders(book.bids[0].0));
         self.place_asks(self.asks_config.build_orders(book.asks[0].0));
         thread::sleep(Duration::from_millis(self.sleep_for));

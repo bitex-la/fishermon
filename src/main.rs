@@ -7,7 +7,6 @@
 
 extern crate bitex;
 #[macro_use]
-extern crate decimal;
 extern crate fishermon;
 #[macro_use]
 extern crate log;

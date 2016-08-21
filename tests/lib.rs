@@ -1,5 +1,4 @@
 #[macro_use]
-extern crate decimal;
 extern crate http_stub;
 extern crate bitex;
 extern crate fishermon;
@@ -64,19 +63,19 @@ fn trade(){
     let api = Api::new(&url);
     let trader = Trader::new(api, 0, 0,
         Strategy {
-            total_amount: d128!(500),
-            min_size: d128!(1),
-            price_delta: d128!(-100),
-            price_growth: d128!(1.5),
-            amount_growth: d128!(1.5),
+            total_amount: 500.0,
+            min_size: 1.0,
+            price_delta: -100.0,
+            price_growth: 1.5,
+            amount_growth: 1.5,
             count: 3,
         },
         Strategy {
-            total_amount: d128!(1),
-            min_size: d128!(0.005),
-            price_delta: d128!(50),
-            price_growth: d128!(2),
-            amount_growth: d128!(2),
+            total_amount: 1.0,
+            min_size: 0.005,
+            price_delta: 50.0,
+            price_growth: 2.0,
+            amount_growth: 2.0,
             count: 4,
         }
     );
